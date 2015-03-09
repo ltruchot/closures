@@ -31,6 +31,47 @@ for (var i = 0; i <= 2; i++) {
     };
 }
 
+//parceque fermerture
+var planetes = ["la Terre", "Mars", "Venus", "Pluton"];
+var memorisePlanete = function (index) {
+    return function () {//l'"index" donné restera stocké en mémoire
+        console.log("Cette planete est", planetes[index]);
+    };
+};
+for (var i = 0; i <= 2; i++) {  
+    var btn = creerBouton(planetes[i]);
+    var logPlaneteMemorisee = memorisePlanete(i);//CETTE valeur de i est enfermée dans CE contexte
+    btn.onclick = logPlaneteMemorisee;//la fonction retournée s'execute au click, donc pas de ().
+}
+
+//un autre ecueil, le setTimeout
+for (var i = 0; i <=3; i++) {
+    var millisecondes = i*1000;
+    setTimeout(function ()  {
+        if (i < 3) {
+            console.log(i + 1);
+        }
+        else {
+            console.log("Décollage vers Mars !");
+        }
+    }, millisecondes);
+}
+var memoriserCompteur = function (compteur)  {
+    return function () {
+        if (compteur <= 3) {
+            console.log(compteur);
+        }
+        else {
+            console.log("Décollage vers Mars !");
+        }
+    };
+};
+for (var i = 1; i <= 4; i++) {
+    var millisecondes = i*1000;
+    setTimeout(memoriserCompteur(i), millisecondes);
+}
+
+
 //le contexte d'execution
 var planete4 = "Pluton"; 
 var logPlanetes = function (planete2, planete3) {
@@ -39,43 +80,31 @@ var logPlanetes = function (planete2, planete3) {
 };
 logPlanetes("Mars", "Venus");
 
-/*
-var ExecutionContext = {
-    localeVars: {"planete1": planete1}, // variables déclarées à même la fonction
-    arguments:  {"planete2": planete2, "planete3": planete3, length:2, callee:logPlanetes}, //variables passée en paramètres
-    contextVars: {"planete4": planete4}, //variables découvertes dans les fonctions parentes au moment l'excution de la fille, 
-    allVarsUsed: ["planete1", "planete2", "planete3", "planete4", "planete5"], //variables découvertes en parsant la fonction
 
-    //pour chaque variables utilisée dans la fonction (allVarsUsed), déterminer sa valeur à l'exécution:
-    chosingVariables: function () {
-        var self = this;
-        this.allVarsUsed.forEach(function (varName) {
-            return  self.localeVars[varName] || self["arguments"][varName] || self.parentVars[varName] || undefined;
-        });
-    },
+var ExecutionContext = {
+    Variables: ["planete1", "planete2", "planete3", "planete4", "planete5"], // découvertes en parsant   
+    Activation: {
+        locales: {"planete1": planete1}, // variables déclarées à même la fonction
+        arguments:  { //passées en paramètres
+            "planete2": planete2,
+            "planete3": planete3, 
+            length:2, 
+            callee: "logPlanetes"
+        }, 
+        contexte: {"planete4": planete4} //découvertes dans le Scope  
+    }, 
+    Scope: [this.Activation, this.parent.Activation, this.parent.parent.Activation, "etc..."],   
 
     finalVariables: { //et finalement...    
-        planete1: undefined, // en attendant l'assignation, puis "la Terre"
+        planete1: undefined, //en attendant l'assignation, puis "la Terre"
         planete2: "Mars",//grace aux paramètres
         planete3: "Venus",//grace aux paramètres
         planete4: "Pluton",//grace au parent (ici la globale "window")
-        planete5: undefined, //indefini car trouvé nulle part: ni dedans, ni dans les arguments, ni dans les parents
-        this: window//d'autres choses sont déterminées ici, comme "this"
+        planete5: undefined, //indefini car trouvé nulle part: ni dedans, ni dans args, ni dans parents
+        this: window//d'autres choses sont déterminées dans ce contexte, comme la valeur de "this"
     }
 };
-*/
 
-var planetes = ["la Terre", "Mars", "Venus", "Pluton"];
-var memorisePlanete = function (index) {
-    return function () {//l'"index" donné restera stocké en mémoire en attendant l'exécution de cette fonction
-        console.log("Cette planete est", planetes[index]);
-    };
-};
-for (var i = 0; i <= 2; i++) {  
-    var btn = creerBouton(planetes[i]);
-    var logPlaneteMemorisee = memorisePlanete(i);//CETTE valeur de i est enfermée dans CE contexte d'execution unique, et persistant pour les fonctions filles
-    btn.onclick = logPlaneteMemorisee;//attention, on veut que la fonction retournée s'execute au click, donc pas de ().
-}
 
 
 var planetes = ["la Terre", "Mars", "Venus", "Pluton"];
@@ -90,11 +119,14 @@ for (var i = 0; i <= 2; i++) {
 
 //partiales 1/2
 var maFonction = function (maFonctionAnonyme) {
-    maFonctionAnonyme();
+    return function () {
+        maFonctionAnonyme();
+    };
 };
-maFonction(function () {
-    console.log("Je suis une fonction lambda.");
+var partirSurMars = maFonction(function () {
+    console.log("Nous partons sur Mars !");
 });
+partirSurMars();
 
 var partiale = function (functionFinale, argument1) {
   return function(){//la fonction pourra rester sans arguments :
