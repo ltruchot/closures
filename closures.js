@@ -18,7 +18,7 @@ var nouvelleFonction = maFonction();//stocke la nouvelle fonction
 nouvelleFonction("y");//execute la fonction (affiche "y" dans la console)
 
 var maFonction2 = function (func, arg) { 
-    func(arg);//excute la fonction donnée en param, en lui donnant l'argument donné en param
+    func(arg);//execute la fonction donnée en paramètres, avec son argument
 };
 maFonction2(function (a) { console.log(a); }, "bonjour");//affiche "bonjour"
 
@@ -35,7 +35,7 @@ demenager("Mars");
 
 //pourquoi "fermeture"
 var creerBouton = function (label) {
-    btn = document.createElement("BUTTON");
+    var btn = document.createElement("BUTTON");
     btn.appendChild(document.createTextNode(label));
     document.body.appendChild(btn);
     return btn;
@@ -61,6 +61,17 @@ for (var i = 0; i <= 2; i++) {
     btn.onclick = logPlaneteMemorisee;//la fonction retournée s'execute au click, donc pas de ().
 }
 
+//Ah ouais, en fait c’est génial !
+var planetes = ["la Terre", "Mars", "Venus", "Pluton"];
+for (var i = 0; i <= 2; i++) {  
+    var btn = creerBouton(planetes[i]);
+    btn.onclick = (function (i) { //declaration de fonction dans une boucle = mauvaise pratique
+        return function () {
+            console.log("Cette planete est", planetes[i]);
+        };
+    })(i);
+}
+
 //un autre ecueil, le setTimeout
 for (var i = 0; i <=3; i++) {
     var millisecondes = i*1000;
@@ -69,7 +80,7 @@ for (var i = 0; i <=3; i++) {
             console.log(i + 1);
         }
         else {
-            console.log("Décollage vers Mars !");
+            console.log("Go to Mars !");
         }
     }, millisecondes);
 }
@@ -110,29 +121,16 @@ var ExecutionContext = {
         }, 
         contexte: {"planete4": planete4} //découvertes dans le Scope  
     }, 
-    Scope: [this.Activation, this.parent.Activation, this.parent.parent.Activation, "etc..."],   
-
+    Scope: [self.Activation, self.parent.Activation, self.parent.parent.Activation, "etc… jusqu’à window"],
     finalVariables: { //et finalement...    
         planete1: undefined, //en attendant l'assignation, puis "la Terre"
         planete2: "Mars",//grace aux paramètres
         planete3: "Venus",//grace aux paramètres
-        planete4: "Pluton",//grace au parent (ici la globale "window")
+        planete4: "Pluton",//grace au parent
         planete5: undefined, //indefini car trouvé nulle part: ni dedans, ni dans args, ni dans parents
         this: window//d'autres choses sont déterminées dans ce contexte, comme la valeur de "this"
     }
 };
-
-
-
-var planetes = ["la Terre", "Mars", "Venus", "Pluton"];
-for (var i = 0; i <= 2; i++) {  
-    var btn = creerBouton(planetes[i]);
-    btn.onclick = (function (i) { //declaration de fonction dans une boucle = mauvaise pratique
-        return function () {
-            console.log("Cette planete est", planetes[i]);
-        };
-    })(i);
-}
 
 //partiales 1/2
 var maFonction = function (maFonctionAnonyme) {
