@@ -1,8 +1,26 @@
-//la fonction la plus simple
+//prérequis
+var maVariable = "Je suis une variable saine";
+
+//fonctions, variables et portée
+var destination = "Mars";
 var setOrigine = function (planete) {
-    console.log("Notre planete d'origine est " + planete + ".");
+	var satellite = "la Lune";
+    console.log("Nous venons de la " + planete + ". Et nous allons sur " + destination);
 };
 setOrigine("la Terre");
+console.log("type des variables:", typeof destination, typeof planete, typeof satellite);
+
+//une derniere subtilié
+var maFonction1 = function () {
+    return function (x) { console.log(x); };
+};
+var nouvelleFonction = maFonction();//stocke la nouvelle fonction
+nouvelleFonction("y");//execute la fonction (affiche "y" dans la console)
+
+var maFonction2 = function (func, arg) { 
+    func(arg);//excute la fonction donnée en param, en lui donnant l'argument donné en param
+};
+maFonction2(function (a) { console.log(a); }, "bonjour");//affiche "bonjour"
 
 //qu'entends-t-on par "closure"
 var setOrigineAndGetVoyage = function (origine) {
@@ -14,7 +32,6 @@ var setOrigineAndGetVoyage = function (origine) {
 };
 var demenager = setOrigineAndGetVoyage("la Terre");
 demenager("Mars");
-
 
 //pourquoi "fermeture"
 var creerBouton = function (label) {
