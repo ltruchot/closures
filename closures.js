@@ -11,16 +11,12 @@ setOrigine("la Terre");
 console.log("type des variables:", typeof destination, typeof planete, typeof satellite);
 
 //une derniere subtilié
-var maFonction1 = function () {
+var maFonction = function () {
     return function (x) { console.log(x); };
 };
 var nouvelleFonction = maFonction();//stocke la nouvelle fonction
 nouvelleFonction("y");//execute la fonction (affiche "y" dans la console)
 
-var maFonction2 = function (func, arg) { 
-    func(arg);//execute la fonction donnée en paramètres, avec son argument
-};
-maFonction2(function (a) { console.log(a); }, "bonjour");//affiche "bonjour"
 
 //qu'entends-t-on par "closure"
 var setOrigineAndGetVoyage = function (origine) {
@@ -101,66 +97,83 @@ for (var i = 1; i <= 4; i++) {
 
 
 //le contexte d'execution
-var planete4 = "Pluton"; 
-var logPlanetes = function (planete2, planete3) {
-    var planete1 = "la Terre";
-    console.log(planete1, planete2, planete3, planete4, typeof planete5);
-};
-logPlanetes("Mars", "Venus");
-
-
+var planete5 = "Neptune";
+var playWithPlanete = (function () {
+    var planete4 = "Pluton"; 
+    var logPlanetes = function (planete2, planete3) {
+        var planete1 = "la Terre";
+        console.log(planete1,planete2,planete3,planete4,planete5, typeof planete6);
+    };
+    logPlanetes("Mars", "Venus");
+})();
 var ExecutionContext = {
-    Variables: ["planete1", "planete2", "planete3", "planete4", "planete5"], // découvertes en parsant   
+    Variable: [planete1, planete2, planete3, planete4, planete5, planete6], // découvertes en parsant  
     Activation: {
-        locales: {"planete1": planete1}, // variables déclarées à même la fonction
-        arguments:  { //passées en paramètres
-            "planete2": planete2,
-            "planete3": planete3, 
-            length:2, 
-            callee: "logPlanetes"
-        }, 
-        contexte: {"planete4": planete4} //découvertes dans le Scope  
-    }, 
+        locales: [planete1], //déclarées à même la fonction
+        arguments: [planete2, planete3],//passées en paramètres
+        contexte: [planete4, planetes5] //découvertes dans le Scope 
+    },
     Scope: [self.Activation, self.parent.Activation, self.parent.parent.Activation, "etc… jusqu’à window"],
-    finalVariables: { //et finalement...    
+    finalValues: { //et finalement...   
         planete1: undefined, //en attendant l'assignation, puis "la Terre"
         planete2: "Mars",//grace aux paramètres
         planete3: "Venus",//grace aux paramètres
         planete4: "Pluton",//grace au parent
-        planete5: undefined, //indefini car trouvé nulle part: ni dedans, ni dans args, ni dans parents
+        planete5: "Neptune", //grace au global "window"
+        planete6: undefined, //indéfini car trouvé nulle part: ni dedans, ni dans args, ni dans parents
         this: window//d'autres choses sont déterminées dans ce contexte, comme la valeur de "this"
     }
 };
 
-//partiales 1/2
-var maFonction = function (maFonctionAnonyme) {
+//partiales 1/3
+var fonctionPartielle = function (func, arg) { 
     return function () {
-        maFonctionAnonyme();
+        func(arg);//execute la fonction donnée en paramètres, avec son argument
     };
 };
-var partirSurMars = maFonction(function () {
-    console.log("Nous partons sur Mars !");
-});
+var partirSurMars = fonctionPartielle(function (planete) {
+    console.log("Nous partons sur " + planete + " !");
+}, "Mars");
 partirSurMars();
 
-var partiale = function (functionFinale, argument1) {
-  return function(){//la fonction pourra rester sans arguments :
-    return functionFinale(argument1);
-  };
-};
 
+//partiale 2/3
 var rappelOrigine = function (origine, planeteActuelle) {
     console.log("Nous vivons sur " + planeteActuelle + ", mais notre planete d'origine est " + origine + ".");
 };
 rappelOrigine("la Terre", "Mars");
-rappelOrigine.call(null, "la Terre", "Venus");
 rappelOrigine.apply(null, ["la Terre", "Pluton"]);
 
 
-var transformerArgsEnArray = function(args, nombreAIgnorer) {
-    var resultat = [];
-    for (var i = nombreAIgnorer; i < args.length; i++) {
-        resultat.push(args[i]);
-    }
-    return resultat;
+var mettreArgumentsDansTableau = function (args, debut) {
+    var tab = [];
+    for (var i = debut; i < args.length; i++) { tab.push(args[i]); }
+    return tab;
 };
+var logArguments = function (args) {
+    console.log(mettreArgumentsDansTableau(args, 0).join(", "));
+};
+var fonctionExecutee = (function (p1, p2, p3) {
+    logArguments(arguments);
+})("Uranus", "Jupiter", "Saturne");
+
+//partiale 3/3
+var mettreArgumentsDansTableau = function (args, debut) {
+    var tab = [];
+    for (var i = debut; i < args.length; i++) { tab.push(args[i]); }
+    return tab;
+};
+function partiale(func) {
+  var argumentsMemorises = mettreArgumentsDansTableau(arguments, 1);
+  return function(){
+    return func.apply(null, argumentsMemorises.concat(mettreArgumentsDansTableau(arguments, 0)));
+  };
+}
+var parcourirPlanetes = function (p1, p2, p3, p4, p5) {
+    console.log("Notre berceau est " + p1);
+    console.log("Nous avons vécu sur " + p2 + ", puis sur " + p3);
+    console.log("La guerre contre les reptiliens a eu lieu sur " + p4);
+    console.log("Nous avons fui sur  " + p5);
+};
+var finirParcours = partiale(parcourirPlanetes, "la Terre", "Venus", "Mars");
+finirParcours("Jupiter", "Neptune");
